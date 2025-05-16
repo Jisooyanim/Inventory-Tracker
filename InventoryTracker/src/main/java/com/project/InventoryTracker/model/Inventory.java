@@ -1,5 +1,7 @@
 package com.project.InventoryTracker.model;
 
+import java.util.Objects;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -62,5 +64,21 @@ public class Inventory {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o == null || getClass() != o.getClass()) return false;
+        Inventory that = (Inventory) o;
+        return Objects.equals(id, that.id) && 
+                Objects.equals(name, that.name) && 
+                Objects.equals(description, that.description) && 
+                Objects.equals(quantity, that.quantity) &&
+                Objects.equals(category, that.category);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, quantity, category);
     }
 }
