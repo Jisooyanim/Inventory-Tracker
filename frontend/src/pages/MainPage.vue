@@ -8,9 +8,14 @@
         bordered
         :rows="rows"
         :columns="columns"
-        row-key="name"
+        row-key="id"
+        :rows-per-page-options="[0]"
         hide-bottom
         class="q-mb-md"
+        :pagination="{
+          sortBy: 'name',
+          descending: false,
+        }"
       >
         <template v-slot:body-cell-actions="props">
           <q-td align="center">
@@ -52,12 +57,43 @@
           {{ mode === 'add' ? 'Add Item' : 'Edit Item' }}
         </q-card-section>
 
-        <q-card-section class="q-gutter-md">
-          <q-input v-model="addItemModal.name" outlined :dense="dense" label="Name" />
-          <q-input v-model="addItemModal.description" outlined :dense="dense" label="Description" />
-          <q-input v-model.number="addItemModal.quantity" outlined :dense="dense" label="Quantity" type="number" />
-          <q-input v-model="addItemModal.category" outlined :dense="dense" label="Category" />
-        </q-card-section>
+        <q-form ref="formRef">
+          <q-card-section class="q-gutter-md">
+            <q-input
+              v-model="addItemModal.name"
+              outlined
+              :dense="dense"
+              label="Name"
+              :rules="[val => !!val || 'Name is required']"
+            />
+            <q-input
+              v-model="addItemModal.description"
+              outlined
+              :dense="dense"
+              label="Description"
+              :rules="[val => !!val || 'Description is required']"
+            />
+            <q-input
+              v-model.number="addItemModal.quantity"
+              outlined
+              :dense="dense"
+              label="Quantity"
+              type="number"
+              :rules="[
+                val => val !== null && val !== '' || 'Quantity is required',
+                val => !isNaN(val) || 'Must be a number',
+                val => val >= 0 || 'Quantity cannot be less than zero'
+              ]"
+            />
+            <q-input
+              v-model="addItemModal.category"
+              outlined
+              :dense="dense"
+              label="Category"
+              :rules="[val => !!val || 'Category is required']"
+            />
+          </q-card-section>
+        </q-form>
 
         <q-card-actions class="q-px-md q-pt-none q-pb-md justify-end">
           <q-btn
@@ -84,12 +120,14 @@
 </template>
 
 <script setup>
-  import { ref, reactive } from 'vue'
+  import { ref, reactive, onMounted } from 'vue'
   import { useQuasar } from 'quasar'
+  import InventoryAPI from 'src/services/InventoryAPI'
 
   const $q = useQuasar()
   const showItemModal = ref(false)
   const mode = ref('add')
+  const formRef = ref(null);
 
   const columns = [
     { name: 'name', label: 'Name', align: 'left', field: row => row.name, sortable: true },
@@ -99,14 +137,16 @@
     { name: 'actions', label: '', align: 'center', field: 'actions', sortable: false }
   ]
 
-  const rows = ref([
-    {
-      name: "Laptop",
-      description: "15-inch display",
-      quantity: 10,
-      category: "Electronics"
+  const rows = ref([])
+
+  onMounted(async () => {
+    try {
+      const response = await InventoryAPI.getAllInventory();
+      rows.value = response.data;
+    } catch (error) {
+      console.error('ERROR! NO DATA FETCHED!. ' + error.message);
     }
-  ])
+  })
 
   const addItemModalDefault = {
     name: '',
@@ -131,19 +171,38 @@
     showItemModal.value = true
   }
 
-  const saveItem = () => {
+  const saveItem = async () => {
+    const valid = await formRef.value.validate();
+
+    if (!valid) {
+      $q.notify({ type: 'warning', message: 'Please put values to the respective fields', position: 'top' });
+      return;
+    }
+
     if (mode.value === 'add') {
-      rows.value.push({ ...addItemModal })
-      $q.notify({ type: 'positive', message: 'Item successfully added.', position: 'top' })
+      try {
+        await InventoryAPI.addInventory({ ...addItemModal });
+
+        rows.value.push({ ...addItemModal }); 
+        $q.notify({ type: 'positive', message: 'Item successfully added.', position: 'top' });
+      } catch (error) {
+        console.error('Item not added! ', error);
+      }
     } else {
-      const index = rows.value.findIndex(item => item.name === addItemModal.name)
-      if (index !== -1) {
-        rows.value[index] = { ...addItemModal }
-        $q.notify({ type: 'positive', message: 'Item successfully updated.', position: 'top' })
+      try {
+        await InventoryAPI.updateInventory(addItemModal.id, { ...addItemModal });
+        const index = rows.value.findIndex(item => item.id === addItemModal.id);
+
+        if (index !== -1) {
+          rows.value.splice(index, 1, { ...addItemModal });
+          $q.notify({ type: 'positive', message: 'Item successfully updated.', position: 'top' });
+        }
+      } catch (error) {
+        console.error('Item not updated! ', error);
       }
     }
 
-    showItemModal.value = false
-    resetModal()
-  }
+    showItemModal.value = false;
+    resetModal();
+  };
 </script>

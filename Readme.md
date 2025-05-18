@@ -1,30 +1,24 @@
 # 📦 Inventory Tracker – Features List
 
 ## ✅ Phase 1: Core Features (Beginner-Level)
-- [ ] Add Item
-  - Form: name, description, quantity, category
-  - POST to backend
-  - Basic form validation
+- [X] Add Item
+  - [X] Form: name, description, quantity, category
+  - [X] POST to backend
+  - [X] Basic form validation
 
 - [ ] View Inventory List
-  - Table/card layout
-  - Show name, description, quantity, category
-  - Highlight "Low Stock" (quantity < 5)
+  - [X] Table/card layout
+  - [X] Show name, description, quantity, category
+  - [ ] Highlight "Low Stock" (quantity < 5)
 
-- [ ] Edit Item
-  - Modal or route-based edit form
-  - Load existing data
-  - PUT to backend
+- [X] Edit Item
+  - [X] Modal or route-based edit form
+  - [X] Load existing data
+  - [X] PUT to backend
 
 - [ ] Delete Item
-  - Delete button with confirmation
-  - DELETE API call
-
-- [ ] Frontend Routing
-  - `/` → list view
-  - `/add` → add form
-  - `/edit/:id` → edit form
-
+  - [ ] Delete button with confirmation
+  - [ ] DELETE API call
 ---
 
 ## ✳️ Phase 2: Useful Extras
