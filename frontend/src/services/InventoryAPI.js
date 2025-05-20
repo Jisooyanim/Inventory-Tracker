@@ -12,4 +12,8 @@ export default {
     updateInventory(id, data) {
         return API().put(`/${id}`, data)
     },
+
+    deleteInventory(name) {
+        return API().delete('', { data: { name }})
+    }
 }

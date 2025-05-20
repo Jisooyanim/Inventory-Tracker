@@ -27,6 +27,15 @@
               class="edit-outline"
               @click="editItem(props.row)"
             />
+            <q-btn
+              unelevated
+              text-color="white"
+              color="red"
+              label="Delete Item"
+              no-caps
+              class="q-ml-xs"
+              @click="deleteItem(props.row)"
+            />
           </q-td>
         </template>
       </q-table>
@@ -39,14 +48,6 @@
           no-caps
           class="edit-outline"
           @click="openAddModal"
-        />
-        <q-btn
-          unelevated
-          text-color="white"
-          color="red"
-          label="Delete Item"
-          no-caps
-          class="q-ml-xs"
         />
       </div>
     </div>
@@ -204,5 +205,19 @@
 
     showItemModal.value = false;
     resetModal();
-  };
+  }
+
+  const deleteItem = (row) => {
+    $q.dialog({ title: 'Delete item?', message: 'This action cannot be undone.', cancel: true, ok: { label: 'Delete', color: 'red' }, persistent: true })
+      .onOk(async () => {
+        try {
+          await InventoryAPI.deleteInventory(row.name);
+
+          rows.value = rows.value.filter(item => item.name !== row.name);
+          $q.notify({ type: 'positive', message: 'Item successfully deleted.', position: 'top' });
+        } catch (error) {
+          console.error('Item not deleted! ', error);
+        }
+      })
+};
 </script>
